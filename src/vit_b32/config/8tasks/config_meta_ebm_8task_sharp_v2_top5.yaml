@@ -1,0 +1,58 @@
+config: ""
+project_root: "/path/to/vision_project"
+task_order: "mnist,dtd,sun397,stanfordcars,resisc45,gtsrb,eurosat,svhn"
+task_limit: 0
+normalized_root: ""
+normalized_all_dir: ""
+topk_checkpoints_per_task: 5
+task_vectors_dir: ""
+
+seed: 2026
+device: "cuda:0"
+batch_size: 8
+num_workers: 4
+num_epochs_per_task: 500
+max_steps_per_task: 0
+learning_rate: 0.0001
+weight_decay: 0.0001
+grad_clip: 1.0
+log_every: 10
+
+input_dim: -1
+condition_dim: -1
+pool_length: 1024
+hidden_dim: 256
+task_hidden_dim: 128
+hutchinson_samples: 1
+vpfb_trace_weight: 0.2
+
+memories: 160
+replay_batch_size: 8
+replay_loss_weight: 1.0
+align_weight: 0.01
+align_min_grad_norm: 0.00000001
+align_target_cosine: 0.2
+comp_weight: 0.001
+comp_batch_pairs: 2
+
+eval_num_samples: 1
+eval_aggregate: "best"
+eval_batch_size: 256
+eval_num_workers: 4
+eval_max_batches: 0
+eval_refine_steps: 10
+eval_refine_lr: 0.01
+eval_refine_beta: 4.0
+eval_init_noise_std: 0.0
+eval_refine_grad_clip: 0.0
+seen_init_mode: "prototype"
+unseen_init_mode: "zero"
+skip_initial_eval: false
+
+save_dir: "./outputs/vit_b32/train_sharp_v2_top5"
+log_dir: "./outputs/vit_b32/logs"
+exp_name: "meta_ebm_sharp_v2_top5"
+resume_from: ""
+disable_task_checkpoint: false
+disable_tqdm: false
+dry_run: false

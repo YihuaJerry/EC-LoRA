@@ -1,0 +1,12 @@
+torch==2.5.1
+transformers>=4.57.0
+peft>=0.17.1
+safetensors>=0.4.0
+pyyaml>=6.0
+tqdm>=4.66
+pillow>=10.0
+shortuuid>=1.0.11
+nltk>=3.9
+rouge>=1.0.1
+pycocotools>=2.0.7
+pycocoevalcap>=1.2

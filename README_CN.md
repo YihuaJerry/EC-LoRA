@@ -1,12 +1,12 @@
 # EC-LoRA: Energy-Driven Continual LoRA Implicit Generation
 
-English | [中文](README_CN.md)
+[English](README.md) | 中文
 
-## Structure
+## 目录
 
 ```text
 EC_LoRA/
-├── checkpoints/  # task-specific LoRA checkpoints
+├── checkpoints/  # 各任务的 LoRA checkpoint
 ├── requirements.txt
 └── src/
     ├── common/
@@ -15,18 +15,17 @@ EC_LoRA/
     ├── qwen3_8b/
     ├── qwen3_vl_8b/
     └── llava_v1_5_7b/
-        ├── model/   # energy model and adapter data
-        ├── config/  # train and evaluation configs
-        ├── eval/    # evaluation code
-        └── tools/   # training utilities
+        ├── model/   # 能量模型与参数处理
+        ├── config/  # 训练和评测配置
+        ├── eval/    # 评测代码
+        └── tools/   # 训练工具
 ```
 
-All five backbone directories follow this layout.
+五个模型目录采用相同结构。
 
-## Installation
+## 安装
 
-Create an environment and install dependencies; use a compatible PyTorch/CUDA
-build for GPU execution.
+创建环境并安装依赖；GPU 环境请选择匹配的 PyTorch/CUDA 版本。
 
 ```bash
 conda create -n ec_lora python=3.10
@@ -35,9 +34,9 @@ pip install -r requirements.txt
 pip install -r src/vit_b32/requirements.txt
 ```
 
-## Backbones
+## 主干模型
 
-| Backbone | Link |
+| 模型 | 链接 |
 | --- | --- |
 | ViT-B/32 | [OpenAI CLIP](https://github.com/openai/CLIP) |
 | DeepSeek-7B | [DeepSeek LLM 7B Base](https://huggingface.co/deepseek-ai/deepseek-llm-7b-base) |
@@ -45,7 +44,7 @@ pip install -r src/vit_b32/requirements.txt
 | Qwen3-VL-8B | [Qwen3-VL-8B-Instruct](https://huggingface.co/Qwen/Qwen3-VL-8B-Instruct) |
 | LLaVA-v1.5-7B | [LLaVA-v1.5-7B](https://huggingface.co/liuhaotian/llava-v1.5-7b) |
 
-## Configuration
+## 配置
 
 ```text
 src/vit_b32/config/8tasks/config_meta_ebm_8task.yaml
@@ -55,9 +54,9 @@ src/qwen3_vl_8b/config/meta_ebm_qwenvl.yaml
 src/llava_v1_5_7b/config/meta_ebm_llava.yaml
 ```
 
-## LoRA Checkpoints
+## LoRA Checkpoint
 
-Place task-specific LoRA checkpoints under `checkpoints/`:
+将各任务的 LoRA checkpoint 放在 `checkpoints/` 下：
 
 ```text
 checkpoints/
@@ -68,26 +67,27 @@ checkpoints/
 └── llava_v1_5_7b/output_<task>/
 ```
 
-Language and multimodal task directories need `top_checkpoints.json`.
-Each adapter has `adapter_config.json` and `adapter_model.safetensors` (or `.bin`),
-directly in the task directory or under `checkpoint-*/`.
-ViT directories need `normalized_<task>_*.pth` and a validation-ranked
-`top_checkpoints_<task>.json`. Its source adapter is read from
-`<project_root>/ICM-LoRA-ViT/checkpoints/output_<task>/best_<task>_lora_vit.pt`.
+语言及多模态任务目录需包含 `top_checkpoints.json`。每个 adapter 的
+`adapter_config.json` 和 `adapter_model.safetensors`（或 `.bin`）可直接放在
+任务目录，也可放在 `checkpoint-*/` 子目录。
+ViT 目录需包含 `normalized_<task>_*.pth` 和验证集排序清单
+`top_checkpoints_<task>.json`；其 source adapter 从
+`<project_root>/ICM-LoRA-ViT/checkpoints/output_<task>/best_<task>_lora_vit.pt`
+读取。
 
-## Train and Evaluate (ViT-B/32)
+## 训练与评测（ViT-B/32）
 
-Set the paths in `src/vit_b32/config/8tasks/config_meta_ebm_8task.yaml`, then
-run from the repository root:
+设置 `src/vit_b32/config/8tasks/config_meta_ebm_8task.yaml` 中的路径后，
+在仓库根目录运行：
 
 ```bash
 python src/vit_b32/train_meta_ebm.py --config src/vit_b32/config/8tasks/config_meta_ebm_8task.yaml
 ```
 
-ViT evaluation runs after each training stage. Other backbones use their own
-YAML files under `src/<backbone>/config/`.
+ViT 每个训练阶段结束后自动评测。其他主干模型使用
+`src/<backbone>/config/` 下各自的 YAML 配置。
 
-## References
+## 参考仓库
 
 - [OpenAI CLIP](https://github.com/openai/CLIP)
 - [LoRA](https://github.com/microsoft/LoRA)
@@ -97,6 +97,6 @@ YAML files under `src/<backbone>/config/`.
 - [LLaVA](https://github.com/haotian-liu/LLaVA)
 - [Hugging Face PEFT](https://github.com/huggingface/peft)
 - [RobustMerge / MM-MergeBench](https://github.com/AuroraZengfh/RobustMerge)
-- [Pinned RobustMerge revision](https://github.com/AuroraZengfh/RobustMerge/tree/12128022190516cc93a549cc4931112ce4bdcda3)
-- [LLaVA-v1.5 paper](https://arxiv.org/abs/2310.03744)
-- [RobustMerge paper](https://arxiv.org/abs/2502.17159)
+- [RobustMerge 固定版本](https://github.com/AuroraZengfh/RobustMerge/tree/12128022190516cc93a549cc4931112ce4bdcda3)
+- [LLaVA-v1.5 论文](https://arxiv.org/abs/2310.03744)
+- [RobustMerge 论文](https://arxiv.org/abs/2502.17159)

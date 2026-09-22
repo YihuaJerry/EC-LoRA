@@ -1,0 +1,56 @@
+config: ""
+project_root: "/path/to/vision_project"
+task_order: "mnist,gtsrb,eurosat,resisc45,dtd,sun397,stanfordcars,svhn"
+task_limit: 0
+normalized_root: "./checkpoints/vit_b32"
+normalized_all_dir: ""
+topk_checkpoints_per_task: 10
+task_vectors_dir: "./artifacts/vit_b32/task_vectors"
+
+seed: 2026
+device: "cuda:0"
+batch_size: 1
+num_workers: 4
+num_epochs_per_task: 1000
+max_steps_per_task: 0
+learning_rate: 0.0001
+weight_decay: 0.0001
+grad_clip: 1.0
+log_every: 10
+
+input_dim: -1
+condition_dim: -1
+pool_length: 2048
+hidden_dim: 256
+task_hidden_dim: 128
+hutchinson_samples: 1
+vpfb_trace_weight: 0.2
+
+memories: 160
+replay_batch_size: 1
+replay_loss_weight: 1.0
+align_weight: 0.0001
+comp_weight: 0.000001
+comp_batch_pairs: 1
+
+eval_num_samples: 1
+eval_aggregate: "best"
+eval_batch_size: 256
+eval_num_workers: 4
+eval_max_batches: 0
+eval_refine_steps: 5
+eval_refine_lr: 0.0001
+eval_refine_beta: 1.0
+eval_init_noise_std: 0.0
+eval_refine_grad_clip: 0.0
+seen_init_mode: "prototype"
+unseen_init_mode: "zero"
+skip_initial_eval: false
+
+save_dir: "./outputs/vit_b32/train"
+log_dir: "./outputs/vit_b32/logs"
+exp_name: "meta_ebm"
+resume_from: ""
+disable_task_checkpoint: false
+disable_tqdm: false
+dry_run: false

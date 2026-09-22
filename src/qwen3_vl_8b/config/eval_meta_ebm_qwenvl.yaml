@@ -1,0 +1,30 @@
+ebm_checkpoint: ""
+tasks: "scienceqa,vizwiz,imagenet,vqav2,iconqa,flickr30k,grounding,ocr_vqa"
+benchmark_tasks: "all"
+checkpoint_root: "./checkpoints/qwen3_vl_8b"
+qwen_project_dir: "/path/to/LoRA_Qwen_VL"
+qwen_config_dir: "/path/to/LoRA_Qwen_VL/config"
+output_dir: "./outputs/qwen3_vl_8b/eval"
+run_name: "manual_eval"
+source_index: 0
+
+device: "cuda:0"
+refine_steps: 5
+refine_lr: 0.0001
+refine_beta: 1.0
+refine_grad_clip: 0.0
+langevin_std: 0.0
+num_samples: 1
+init_noise_std: 0.0
+save_safetensors: true
+skip_eval: false
+
+python_bin: ""
+model_base: ""
+dtype: "bfloat16"
+attn_impl: "flash_attention_2"
+qwen_device: "cuda"
+cuda_device: "0"
+num_chunks: 1
+max_samples:
+fail_fast: false

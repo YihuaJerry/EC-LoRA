@@ -1,0 +1,256 @@
+# Qwen3-8B LoRA Meta-EBM 训练配置。
+
+# PAMI 项目根目录；用于定位 LoRA_Qwen 代码、配置和默认输出位置。
+project_root: "/path/to/project_root"
+
+# Qwen/CMA-ES LoRA checkpoint 根目录；目录下应包含 output_<task>_qwen3_8b/checkpoint-*。
+checkpoint_root: "./checkpoints/qwen3_8b"
+
+# Qwen checkpoint 目录后缀；实际目录名形如 output_cola_qwen3_8b。
+checkpoint_output_suffix: "qwen3_8b"
+
+# 持续学习任务顺序；训练和自动评测都会默认按这个顺序执行。
+task_order: "cola,mnli_m,mnli_mm,mrpc,qnli,qqp,rte,sst2,stsb,wnli"
+
+# 只取前 N 个任务做调试；0 表示使用 task_order 中的全部任务。
+task_limit: 0
+
+# 每个任务从 top_checkpoints.json 中取前 K 个 LoRA checkpoint 作为 EBM 训练样本。
+topk_checkpoints_per_task: 10
+
+# LoRA 向量归一化方式；per_tensor 表示每个 adapter tensor 单独标准化，none 表示不归一化。
+normalize_mode: "per_tensor"
+
+# 归一化标准差下限，防止 std 太小导致数值不稳定。
+normalization_eps: 0.000001
+
+# 是否把非 LoRA 参数也纳入 EBM 向量；默认 false，因为分类头/score 头的任务维度不一致。
+include_non_lora: false
+
+# 可选的参数名正则过滤器；空字符串表示不过滤，通常保持默认即可。
+adapter_key_regex: ""
+
+# pooled LoRA 向量缓存目录；首次读取 safetensors 后会缓存，后续训练更快。
+pooled_cache_dir: "./artifacts/qwen3_8b/pooled"
+
+# 是否禁用 pooled 向量缓存；true 会每次重新从 adapter 文件读取和 pooling。
+disable_pooled_cache: true
+
+# 任务条件类型；dense_hidden 表示用基础 LLM 对任务描述编码，one_hot 表示退回旧的一维任务编号条件。
+task_condition_mode: "dense_hidden"
+
+# 任务条件编码模型路径；空值表示优先用 eval_model_path，再从 LoRA_Qwen 任务 YAML 的 pretrained_checkpoint 读取。
+task_condition_model_path: ""
+
+# dense task hidden state 缓存目录；首次运行会加载基础模型编码任务描述，之后直接读缓存。
+task_condition_cache_dir: "./artifacts/qwen3_8b/task_conditions"
+
+# dense hidden pooling 方式；mean 对 token hidden state 做 mask mean pooling，last 使用最后一个有效 token。
+task_condition_pooling: "mean"
+
+# 任务描述最大 token 长度。
+task_condition_max_length: 256
+
+# 任务条件编码模型精度；auto 会优先读取 LoRA YAML 的 torch_dtype。
+task_condition_precision: "auto"
+
+# 是否对 dense task hidden state 做 L2 归一化，默认 true 以稳定不同任务条件尺度。
+task_condition_normalize: true
+
+# 是否允许任务条件编码模型使用 trust_remote_code。
+task_condition_trust_remote_code: true
+
+# 任务条件编码使用的设备；空值表示复用 device。
+task_condition_device: ""
+
+# 随机种子；控制 Python、NumPy、PyTorch 的随机性。
+seed: 2026
+
+# EBM 训练使用的设备；没有 CUDA 时代码会自动回退到 CPU。
+device: "cuda:0"
+
+# EBM 训练 batch size；Qwen adapter 较大，默认保守设为 1。
+batch_size: 1
+
+# DataLoader worker 数；adapter 读取较重，共享存储上过大可能反而慢。
+num_workers: 0
+
+# 每个任务训练的 epoch 数。
+num_epochs_per_task: 50
+
+# 每个任务最多训练多少 step；0 表示不限制，按 num_epochs_per_task 完整训练。
+max_steps_per_task: 0
+
+# AdamW 学习率；Qwen LoRA 的 pooled score matching 默认使用较保守学习率。
+learning_rate: 0.00002
+
+# AdamW weight decay。
+weight_decay: 0.0001
+
+# 参数梯度裁剪阈值；<=0 表示不裁剪。
+grad_clip: 0.5
+
+# 每多少个全局 step 保存一次 loss 曲线；<=0 表示不按 step 保存。
+log_every: 10
+
+# Qwen adapter 完整向量会在 EBM 内部平均池化到这个长度；2048 更快，且当前观察与大 pool_length 效果接近。
+pool_length: 2048
+
+# LoRA 向量分支 MLP hidden dim；调小可降低每步 HVP/反传开销。
+vector_hidden_dim: 192
+
+# 任务条件向量分支 MLP hidden dim；dense task hidden state 已较强，轻量投影即可。
+cond_hidden_dim: 128
+
+# score matching 训练模式；主实验为严格对齐 ViT，默认使用 hutchinson trace 目标；denoising 仅作为稳定性备选。
+score_matching_mode: "hutchinson"
+
+# denoising score matching 的高斯噪声标准差；只在 score_matching_mode=denoising 时使用。
+dsm_noise_std: 0.1
+
+# Hutchinson trace estimator 的随机探针数量；只在 score_matching_mode=hutchinson 时使用。
+hutchinson_samples: 1
+
+# Hutchinson score matching trace 项权重；只在 score_matching_mode=hutchinson 时使用。
+trace_weight: 0.2
+
+# score matching loss 的优化尺度放大系数；不改变目标形状，只把高维完整 LoRA 空间中过小的梯度放大到可学习量级。
+score_loss_scale: 1000000.0
+
+# reservoir replay memory 容量，单位是 pooled adapter 样本数。
+memories: 80
+
+# 每次当前任务训练时，从历史 memory 中采样多少样本做 replay。
+replay_batch_size: 8
+
+# replay 采样方式；random 为随机采样，cosine_topk 会优先从相似样本池中采样。
+replay_sampling_mode: "cosine_topk"
+
+# cosine_topk 模式下候选池大小；0 表示由代码自动使用 max(k, 4k)。
+replay_importance_topk: 32
+
+# replay loss 权重。
+replay_loss_weight: 1.0
+
+# 当前任务梯度和 replay 梯度的 alignment loss 权重；0 表示关闭。
+align_weight: 0.0001
+
+# alignment 时最小梯度范数；低于该值会跳过 alignment，避免除零/噪声主导。
+align_min_grad_norm: 0.00000001
+
+# alignment 目标 cosine，相似度低于该值会产生 hinge penalty。
+align_target_cosine: 0.2
+
+# composition consistency loss 权重；0 表示关闭。
+comp_weight: 0.000001
+
+# 每个 batch 用多少对当前/历史样本计算 composition consistency。
+comp_batch_pairs: 2
+
+# 训练输出根目录；每次运行会在下面创建带时间戳的 run 子目录。
+save_dir: "./outputs/qwen3_8b/train"
+
+# loss 曲线和训练日志输出目录。
+log_dir: "./outputs/qwen3_8b/logs"
+
+# 实验名；会进入输出目录名和日志目录名。
+exp_name: "meta_ebm_qwen"
+
+# 从某个 task checkpoint 恢复训练；空字符串表示从头训练。
+resume_from: ""
+
+# 是否禁用每个任务结束后的 task-level checkpoint 保存。
+disable_task_checkpoint: false
+
+# 是否关闭 tqdm 进度条。
+disable_tqdm: false
+
+# 是否启用轻量冒烟配置；会减少任务数、checkpoint 数、epoch 和 step。
+dry_run: false
+
+# 训练结束后是否立即运行 refinement + GLUE 评测；如果 eval_after_each_task=true，最后一个任务已经评过，会自动跳过重复总评。
+auto_eval_after_train: true
+
+# dry_run 时是否也自动评测；默认 false，避免冒烟时加载 Qwen 大模型。
+auto_eval_on_dry_run: false
+
+# 是否像 ViT 版一样，每个任务训练结束后立刻 refinement 并跑 GLUE 评测。
+eval_after_each_task: true
+
+# 每个任务后是否只评测已经训练过的任务；true 更省时间，false 会每个阶段都评测 eval_tasks/全任务。
+eval_after_each_task_seen_only: true
+
+# 自动评测的任务列表；空字符串表示复用 task_order。
+eval_tasks: ""
+
+# 自动评测输出根目录；空字符串表示写到当前训练 run 目录下的 eval/。
+eval_output_dir: ""
+
+# 自动评测 run 名；默认输出到 eval/after_train/。
+eval_run_name: "after_train"
+
+# LoRA_Qwen 工程目录；自动评测会复用其中的数据处理和 GLUE 评测代码。
+eval_lora_project_dir: "/path/to/LoRA_Qwen"
+
+# LoRA_Qwen 的任务 YAML 配置目录。
+eval_lora_config_dir: "/path/to/LoRA_Qwen/config"
+
+# refinement 起点使用 top checkpoint 列表中的第几个 checkpoint；0 表示最优 checkpoint。
+eval_source_index: 0
+
+# refinement 能量下降步数。
+eval_refine_steps: 5
+
+# refinement 每步学习率。
+eval_refine_lr: 0.0001
+
+# refinement 能量缩放系数；>1 会让能量井更尖锐。
+eval_refine_beta: 1.0
+
+# refinement 时对向量梯度逐元素裁剪；0 表示不裁剪。
+eval_refine_grad_clip: 0.0
+
+# refinement Langevin 噪声强度；0 表示纯梯度下降。
+eval_langevin_std: 0.0
+
+# 每个任务生成/评测多少个 refined adapter 样本。
+eval_num_samples: 1
+
+# 多样本评测时，除 sample_00 外给初始向量添加的高斯噪声标准差。
+eval_init_noise_std: 0.0
+
+# 是否把生成的 adapter 保存为 safetensors；false 时保存为 adapter_model.bin。
+eval_save_safetensors: false
+
+# 是否只导出 refined adapter 而不加载 Qwen 模型跑 GLUE。
+eval_skip_model_eval: false
+
+# GLUE 评测 split；validation 有标签，test 通常只适合生成预测。
+eval_split: "validation"
+
+# 数据来源；local 使用本地 GLUE 文件，official 从 HuggingFace 数据集加载，auto 自动回退。
+eval_dataset_source: "local"
+
+# 评测时覆盖 base Qwen 模型路径；空值表示使用 LoRA_Qwen YAML 中的 pretrained_checkpoint。
+eval_model_path:
+
+# 评测精度；auto 读取任务 YAML 中的 model.torch_dtype。
+eval_precision: "auto"
+
+# GLUE 评测 per-device batch size。
+eval_per_device_batch_size: 8
+
+# GLUE 评测 DataLoader worker 数。
+eval_dataloader_num_workers: 0
+
+# 每个任务最多评测多少样本；空值表示使用完整 split。
+eval_max_samples:
+
+# 自动评测时可覆盖 CUDA_VISIBLE_DEVICES；空值表示不额外覆盖。
+eval_cuda_device:
+
+# 是否强制 trust_remote_code=True；false 时沿用 LoRA_Qwen 任务 YAML。
+eval_trust_remote_code: false
+
+# 自动评测中任一任务失败时是否立刻中断；false 会记录失败并继续其它任务。
+eval_fail_fast: false

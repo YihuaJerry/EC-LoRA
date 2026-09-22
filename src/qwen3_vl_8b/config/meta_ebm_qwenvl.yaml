@@ -1,0 +1,94 @@
+# Meta-EBM training config for Qwen3-VL LoRA adapters.
+
+project_root: "/path/to/LoRA_Qwen_VL"
+checkpoint_root: "./checkpoints/qwen3_vl_8b"
+task_order: "scienceqa,vizwiz,imagenet,vqav2,iconqa,flickr30k,grounding,ocr_vqa"
+task_limit: 0
+topk_checkpoints_per_task: 10
+
+normalize_mode: "per_tensor"
+normalization_eps: 0.000001
+include_non_lora: false
+adapter_key_regex: ""
+pooled_cache_dir: "./artifacts/qwen3_vl_8b/pooled"
+disable_pooled_cache: true
+task_condition_mode: "dense_hidden"
+task_condition_model_path: ""
+task_condition_cache_dir: "./artifacts/qwen3_vl_8b/task_conditions"
+task_condition_pooling: "mean"
+task_condition_max_length: 256
+task_condition_precision: "auto"
+task_condition_normalize: true
+task_condition_trust_remote_code: true
+task_condition_device: ""
+
+seed: 2026
+device: "cuda:0"
+batch_size: 1
+num_workers: 0
+num_epochs_per_task: 200
+max_steps_per_task: 0
+learning_rate: 0.00002
+weight_decay: 0.0001
+grad_clip: 0.5
+log_every: 10
+
+pool_length: 2048
+vector_hidden_dim: 384
+cond_hidden_dim: 256
+score_matching_mode: "hutchinson"
+dsm_noise_std: 0.1
+hutchinson_samples: 1
+trace_weight: 0.2
+score_loss_scale: 1000000.0
+
+memories: 160
+replay_batch_size: 8
+replay_sampling_mode: "cosine_topk"
+replay_importance_topk: 32
+replay_loss_weight: 1.0
+align_weight: 0.0001
+align_min_grad_norm: 0.00000001
+align_target_cosine: 0.2
+comp_weight: 0.000001
+comp_batch_pairs: 2
+
+save_dir: "./outputs/qwen3_vl_8b/train"
+log_dir: "./outputs/qwen3_vl_8b/logs"
+exp_name: "meta_ebm_qwenvl"
+resume_from: ""
+disable_task_checkpoint: false
+disable_tqdm: false
+dry_run: false
+
+auto_eval_after_train: true
+auto_eval_on_dry_run: false
+eval_after_each_task: true
+eval_after_each_task_current_only: false
+eval_after_each_task_seen_only: true
+eval_tasks: ""
+eval_benchmark_tasks: "seen_so_far_plus_unseen"
+eval_pairing_mode: "seen_one_to_one_unseen_mapped"
+eval_output_dir: ""
+eval_run_name: "after_train"
+eval_lora_project_dir: "/path/to/LoRA_Qwen_VL"
+eval_lora_config_dir: "/path/to/LoRA_Qwen_VL/config"
+eval_source_index: 0
+eval_refine_steps: 5
+eval_refine_lr: 0.0001
+eval_refine_beta: 1.0
+eval_refine_grad_clip: 0.0
+eval_langevin_std: 0.0
+eval_num_samples: 1
+eval_init_noise_std: 0.0
+eval_save_safetensors: true
+eval_skip_model_eval: false
+eval_model_path:
+eval_precision: "bf16"
+eval_max_samples:
+eval_cuda_device:
+eval_python_bin: ""
+eval_attn_impl: "flash_attention_2"
+eval_qwen_device: "cuda"
+eval_num_chunks: 1
+eval_fail_fast: false

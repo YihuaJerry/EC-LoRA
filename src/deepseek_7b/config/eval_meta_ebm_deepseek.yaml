@@ -1,0 +1,97 @@
+# 独立评测配置，用于 eval_meta_ebm.py。
+# 训练脚本默认会自动评测；这个文件主要用于重评已有的 *_final.pt。
+
+# 已训练好的 Meta-EBM checkpoint 路径，评测前填写。
+ebm_checkpoint: ""
+
+# DeepSeek/CMA-ES LoRA checkpoint 根目录；目录下应包含 output_<task>/checkpoint-*。
+checkpoint_root: "./checkpoints/deepseek_7b"
+
+# LoRA_deepseek 工程目录；评测会复用其中的数据处理和手写 GLUE eval。
+lora_project_dir: "/path/to/LoRA_deepseek"
+
+# LoRA_deepseek 的任务 YAML 配置目录。
+lora_config_dir: "/path/to/LoRA_deepseek/config"
+
+# 独立评测输出根目录；每次运行会在下面创建 run_name 子目录。
+output_dir: "./outputs/deepseek_7b/eval"
+
+# 评测 run 名；空字符串表示使用当前时间戳。
+run_name: ""
+
+# 要评测的任务列表；空字符串时 eval 脚本会使用 EBM checkpoint 里保存的 tasks。
+tasks: "cola,mnli_m,mnli_mm,mrpc,qnli,qqp,rte,sst2,stsb,wnli"
+
+# refinement 和 EBM 推理使用的设备；没有 CUDA 时会自动回退到 CPU。
+device: "cuda:0"
+
+# refinement 起点使用 top checkpoint 列表中的第几个 checkpoint；0 表示最优 checkpoint。
+source_index: 0
+
+# refinement 能量下降步数。
+refine_steps: 5
+
+# refinement 每步学习率。
+refine_lr: 0.0001
+
+# refinement 能量缩放系数；>1 会让能量井更尖锐。
+refine_beta: 1.0
+
+# refinement 时对向量梯度逐元素裁剪；0 表示不裁剪。
+refine_grad_clip: 0.0
+
+# refinement Langevin 噪声强度；0 表示纯梯度下降。
+langevin_std: 0.0
+
+# 每个任务生成/评测多少个 refined adapter 样本。
+num_samples: 1
+
+# refinement 的初始 LoRA 向量模式：
+# prototype 表示沿用主方法，从 EBM checkpoint 保存的任务原型出发；
+# random 表示从随机 LoRA 向量出发，但仍使用当前任务条件和 EBM 做 refinement。
+init_mode: "prototype"
+
+# init_mode=random 时随机初始向量的标准差；prototype 模式下不使用。
+random_init_std: 1.0
+
+# init_mode=random 时的随机种子；-1 表示不固定，>=0 时会按 task/sample 派生确定性随机起点。
+random_init_seed: -1
+
+# 多样本评测时，除 sample_00 外给初始向量添加的高斯噪声标准差。
+init_noise_std: 0.0
+
+# 是否把生成的 adapter 保存为 safetensors；false 时保存为 adapter_model.bin。
+save_safetensors: false
+
+# 是否只导出 refined adapter 而不加载 DeepSeek 模型跑 GLUE。
+skip_eval: false
+
+# GLUE 评测 split；validation 有标签，test 通常只适合生成预测。
+eval_split: "validation"
+
+# 数据来源；local 使用本地 GLUE 文件，official 从 HuggingFace 数据集加载，auto 自动回退。
+dataset_source: "local"
+
+# 评测时覆盖 base DeepSeek 模型路径；空值表示使用 LoRA_deepseek YAML 中的 pretrained_checkpoint。
+model_path:
+
+# 评测精度；auto 读取任务 YAML 中的 model.torch_dtype。
+precision: "auto"
+
+# GLUE 评测 per-device batch size。
+per_device_batch_size: 8
+
+# GLUE 评测 DataLoader worker 数。
+dataloader_num_workers: 0
+
+# 每个任务最多评测多少样本；null 表示使用完整 split。
+max_samples: null
+
+# 可覆盖 CUDA_VISIBLE_DEVICES；null 表示不额外覆盖。
+cuda_device: null
+
+# 是否强制 trust_remote_code=True。
+trust_remote_code: false
+
+# 任一任务失败时是否立刻中断；false 会记录失败并继续其它任务。
+fail_fast: false

@@ -1,0 +1,29 @@
+ebm_checkpoint: ""
+tasks: "scienceqa,vizwiz,imagenet,vqav2,iconqa,flickr30k,rec_coco,ocr_vqa"
+benchmark_tasks: "all"
+checkpoint_root: "./checkpoints/llava_v1_5_7b"
+llava_project_dir: "/path/to/LoRA_LLAVA"
+llava_config_dir: "/path/to/LoRA_LLAVA/config"
+output_dir: "./outputs/llava_v1_5_7b/eval"
+run_name: "manual_eval"
+source_index: 0
+
+device: "cuda:0"
+refine_steps: 5
+refine_lr: 0.0001
+refine_beta: 1.0
+refine_grad_clip: 0.0
+langevin_std: 0.0
+num_samples: 1
+init_noise_std: 0.0
+save_safetensors: false
+skip_eval: false
+
+python_bin: ""
+model_base: ""
+llava_device: "cuda"
+cuda_device: "0"
+use_flash_attn: false
+num_chunks: 1
+max_samples:
+fail_fast: false
